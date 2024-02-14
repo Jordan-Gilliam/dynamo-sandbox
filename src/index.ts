@@ -8,7 +8,7 @@ import { Book, BookSchema } from "./service"; // Assuming you have a book.ts tha
 // Initialize DynamoDB Client
 const dbClient = new DynamoDBClient({
   endpoint: "http://localhost:8000",
-  region: "us-west-2",
+  region: "localhost",
   credentials: {
     accessKeyId: "fakeMyKeyId",
     secretAccessKey: "fakeSecretAccessKey",
@@ -24,17 +24,31 @@ const port = 3000;
 app.use(json());
 
 // Endpoint to add a new book
-// app.post("/books", async (req, res) => {
-//   try {
-//     const book = BookSchema.parse(req.body);
-//     // Here, you would call a method from your repository to add the book to DynamoDB
-//     // Assuming addBook is implemented in your repository
-//     await bookRepository.addBook(book);
-//     res.status(201).json(book);
-//   } catch (error) {
-//     res.status(400).json({ error: error.message });
-//   }
-// });
+app.post("/books", async (req, res) => {
+  try {
+    // Validate the incoming book data against the Zod schema
+    const validatedBook = BookSchema.parse(req.body);
+
+    // Prepare the Put operation for the new book
+    const putOperation = {
+      Put: {
+        TableName: "BookReviewsTable", // Assuming tableName is accessible; adjust as needed
+        Item: validatedBook,
+      },
+    };
+
+    // Call the mutate method with the prepared Put operation
+    await bookRepository.mutate([putOperation]); // mutate expects an array of operations
+
+    // Respond with the added book data
+    res.status(201).json(validatedBook);
+  } catch (error) {
+    // Respond with an error message if validation or the database operation fails
+    res.status(400).json({
+      error: error instanceof Error ? error.message : "An error occurred",
+    });
+  }
+});
 
 // Endpoint to update a book's primary key
 app.patch("/books/:oldBookId", async (req, res) => {
