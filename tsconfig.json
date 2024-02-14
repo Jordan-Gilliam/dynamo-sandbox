@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    /* Basic Options */
+    "target": "es2018", // Specify ECMAScript target version
+    "module": "commonjs", // Specify module code generation
+    "lib": ["es2018"], // Specify library files to be included in the compilation
+    "allowJs": true, // Allow JavaScript files to be compiled
+    "outDir": "./dist", // Redirect output structure to the directory
+    "rootDir": "./src", // Specify the root directory of input files
+    "strict": true, // Enable all strict type-checking options
+    "esModuleInterop": true, // Enables emit interoperability between CommonJS and ES Modules
+    "skipLibCheck": true, // Skip type checking of declaration files
+    "forceConsistentCasingInFileNames": true, // Disallow inconsistently-cased references to the same file
+
+    /* Module Resolution Options */
+    "moduleResolution": "node", // Resolve modules using Node.js style
+    "baseUrl": "./", // Base directory to resolve non-relative module names
+    "paths": {
+      // Specify paths mapping to be computed relative to baseUrl
+      "*": ["node_modules/*", "src/types/*"] // Add custom paths for module resolution; adjust as needed
+    },
+
+    /* Advanced Options */
+    "resolveJsonModule": true, // Include modules imported with '.json' extension
+    "typeRoots": ["./node_modules/@types", "./src/types"] // List of folders to include type definitions from
+  },
+  "include": [
+    "src/**/*" // Include all files in the src folder for compilation
+  ],
+  "exclude": [
+    "node_modules", // Exclude the node_modules directory from compilation
+    "**/*.spec.ts" // Exclude test files
+  ]
+}
