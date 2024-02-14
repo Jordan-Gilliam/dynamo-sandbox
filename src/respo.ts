@@ -3,6 +3,7 @@ import {
   TransactWriteCommand,
   ScanCommand,
   QueryCommand,
+  GetCommand,
   TransactWriteCommandInput,
 } from "@aws-sdk/lib-dynamodb";
 import { getDDBUpdateExpression } from "./util-expression";
@@ -50,6 +51,47 @@ export class Repository<T extends Record<string, any>> {
     } catch (error) {
       this.handleDynamoDBError(error, "mutate", {});
       throw error; // Rethrow after logging/handling
+    }
+  }
+
+  // In your Repository class
+
+  async getBookWithRelatedItems(
+    partitionKey: string
+  ): Promise<{ book: T | null; relatedItems: T[] }> {
+    try {
+      // Fetch the book item
+      const book = await this.db.send(
+        new GetCommand({
+          TableName: this.tableName,
+          Key: { partitionKey },
+        })
+      );
+
+      // Fetch related items, assuming 'relatedPartitionKey' is the GSI for related items
+      const relatedItemsResult = await this.db.send(
+        new QueryCommand({
+          TableName: this.tableName,
+          IndexName: "RelatedItemsIndex", // The name of the GSI
+          KeyConditionExpression: "relatedPartitionKey = :partitionKey",
+          ExpressionAttributeValues: {
+            ":partitionKey": partitionKey,
+          },
+        })
+      );
+
+      return {
+        // @ts-ignore
+        book: book.Item || null,
+        relatedItems: relatedItemsResult.Items as T[],
+      };
+    } catch (error) {
+      console.error("Failed to fetch book and related items:", error);
+      throw new DatabaseOperationError(
+        `Error fetching book and related items`,
+        // @ts-ignore
+        error
+      );
     }
   }
 
